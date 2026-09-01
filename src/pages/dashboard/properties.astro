@@ -1,0 +1,39 @@
+---
+import Dashboard from '../../layouts/Dashboard.astro';
+const env = Astro.locals.runtime.env;
+const user = Astro.locals.user;
+const result = user
+  ? await env.DB.prepare('SELECT id, display_name, ga4_property_id, created_at FROM properties WHERE user_id = ? AND deleted_at IS NULL ORDER BY created_at DESC').bind(user.id).all<{ id: string; display_name: string; ga4_property_id: string; created_at: string }>()
+  : { results: [] };
+---
+<Dashboard title="Properties">
+  <p class="eyebrow">GA4 MONITORING</p>
+  <h1>Properties</h1>
+  <article class="card">
+    <h2>Connect Google Analytics</h2>
+    <p class="muted">Grant read-only access, then select a GA4 property that your connected Google account can access.</p>
+    <a class="button" href="/api/google/connect">Connect or reconnect Google Analytics</a>
+  </article>
+  <section class="property-list" aria-live="polite">
+    {result.results.length ? result.results.map((property) => <article class="card"><h2>{property.display_name}</h2><p class="muted">GA4 property {property.ga4_property_id}</p><a href={`/dashboard/properties/${property.id}`}>View analysis</a></article>) : <article class="card"><h2>No property connected</h2><p class="muted">Connect Google Analytics to choose a property. A new property builds a baseline before it receives a risk score.</p></article>}
+  </section>
+  <section class="card" id="google-properties" hidden><h2>Choose an available GA4 property</h2><p class="muted">Loading available properties…</p></section>
+</Dashboard>
+<script>
+  const mount = document.querySelector('#google-properties');
+  const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character] ?? character));
+  if (new URLSearchParams(location.search).get('connected') === 'google' && mount) {
+    mount.hidden = false;
+    fetch('/api/google/properties').then(async (response) => {
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error);
+      mount.innerHTML = `<h2>Choose an available GA4 property</h2><div class="property-list">${payload.properties.map((property: { name: string; displayName: string }) => `<button class="property-choice" data-property-name="${escapeHtml(property.name)}">${escapeHtml(property.displayName)}</button>`).join('') || '<p class="muted">No accessible GA4 properties were found.</p>'}</div>`;
+      mount.querySelectorAll<HTMLButtonElement>('.property-choice').forEach((button) => button.addEventListener('click', async () => {
+        const response = await fetch('/api/properties', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ propertyName: button.dataset.propertyName }) });
+        const payload = await response.json();
+        if (!response.ok) return alert(payload.error);
+        location.assign(`/dashboard/properties/${payload.property.id}`);
+      }));
+    }).catch(() => { mount.innerHTML = '<h2>Unable to load GA4 properties</h2><p class="muted">Reconnect Google Analytics and try again.</p>'; });
+  }
+</script>

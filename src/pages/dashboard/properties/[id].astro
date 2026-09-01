@@ -1,0 +1,26 @@
+---
+import Dashboard from '../../../layouts/Dashboard.astro';
+const user = Astro.locals.user;
+const property = user && Astro.params.id
+  ? await Astro.locals.runtime.env.DB.prepare('SELECT id, display_name, ga4_property_id FROM properties WHERE id = ? AND user_id = ? AND deleted_at IS NULL').bind(Astro.params.id, user.id).first<{ id: string; display_name: string; ga4_property_id: string }>()
+  : null;
+if (!property) return Astro.redirect('/dashboard/properties');
+const metrics = await Astro.locals.runtime.env.DB.prepare('SELECT metric_date, sessions, users, engagement_rate, avg_engagement_seconds, page_views FROM daily_metrics WHERE property_id = ? ORDER BY metric_date DESC LIMIT 14').bind(property.id).all<{ metric_date: string; sessions: number; users: number; engagement_rate: number; avg_engagement_seconds: number; page_views: number }>();
+---
+<Dashboard title={`${property.display_name} — Analysis`}>
+  <p class="eyebrow">GA4 PROPERTY</p>
+  <h1>{property.display_name}</h1>
+  <p class="muted">GA4 property {property.ga4_property_id}</p>
+  <article class="card"><h2>Traffic Risk Score</h2><p class="metric score">—</p><b>BUILDING BASELINE</b><p class="muted">At least seven daily observations are required before traffic-risk scoring.</p><button class="button" id="sync">Refresh GA4 data</button><p class="muted" id="sync-status"></p></article>
+  <section class="card"><h2>Recent GA4 daily metrics</h2>{metrics.results.length ? <table><thead><tr><th>Date</th><th>Sessions</th><th>Users</th><th>Engagement</th><th>Views</th></tr></thead><tbody>{metrics.results.map((metric) => <tr><td>{metric.metric_date}</td><td>{metric.sessions}</td><td>{metric.users}</td><td>{Math.round(metric.engagement_rate * 100)}%</td><td>{metric.page_views}</td></tr>)}</tbody></table> : <p class="muted">No GA4 data has been imported yet.</p>}</section>
+</Dashboard>
+<script define:vars={{ propertyId: property.id }}>
+  document.querySelector<HTMLButtonElement>('#sync')?.addEventListener('click', async () => {
+    const status = document.querySelector('#sync-status');
+    if (status) status.textContent = 'Refreshing GA4 data…';
+    const response = await fetch(`/api/properties/${propertyId}/sync`, { method: 'POST', headers: { 'content-type': 'application/json' } });
+    const payload = await response.json();
+    if (status) status.textContent = response.ok ? `Imported ${payload.importedDays} daily metric rows. Reloading…` : payload.error;
+    if (response.ok) location.reload();
+  });
+</script>

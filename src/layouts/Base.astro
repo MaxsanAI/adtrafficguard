@@ -1,0 +1,4 @@
+---
+const {title='AdTrafficGuard'}=Astro.props;
+---
+<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width"/><title>{title}</title><meta name="description" content="Traffic-quality monitoring for publishers."/><link rel="stylesheet" href="/global.css"/></head><body><header><a class="brand" href="/">AdTrafficGuard</a><nav><a href="/features">Features</a><a href="/pricing">Pricing</a><a href="/how-it-works">How it works</a><a href="/login">Log in</a><a class="button" href="/register">Start free</a></nav></header><main><slot/></main><footer>© {new Date().getFullYear()} AdTrafficGuard · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a></footer></body></html>
