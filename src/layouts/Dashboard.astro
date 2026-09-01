@@ -1,0 +1,4 @@
+---
+import Base from './Base.astro'; const {title='Dashboard'}=Astro.props;
+---
+<Base title={title}><div class="dashboard"><aside class="side"><a href="/dashboard">Overview</a><a href="/dashboard/properties">Properties</a><a href="/dashboard/traffic">Traffic</a><a href="/dashboard/anomalies">Anomalies</a><a href="/dashboard/alerts">Alerts</a><a href="/dashboard/tracker">Tracker</a><a href="/dashboard/billing">Billing</a><a href="/dashboard/settings">Settings</a><a href="/dashboard/api">API</a></aside><section><slot/></section></div></Base>

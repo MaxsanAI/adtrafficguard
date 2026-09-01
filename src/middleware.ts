@@ -1,0 +1,2 @@
+import { defineMiddleware } from 'astro:middleware'; import { currentUser } from './lib/auth';
+export const onRequest=defineMiddleware(async(ctx,next)=>{const env=ctx.locals.runtime?.env; if(env)ctx.locals.user=await currentUser(ctx.request,env)??undefined; const path=ctx.url.pathname; if(path.startsWith('/dashboard')&&!ctx.locals.user)return ctx.redirect('/login'); if(path.startsWith('/admin')&&ctx.locals.user?.role!=='admin')return new Response('Not found',{status:404}); return next();});
