@@ -1,0 +1,14 @@
+{
+  "name": "adtrafficguard",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro check && astro build",
+    "check": "astro check",
+    "test": "vitest run"
+  },
+  "dependencies": {"@astrojs/cloudflare": "^12.6.0", "astro": "^5.16.6"},
+  "devDependencies": {"typescript": "^5.9.3", "vitest": "^3.2.4"}
+}

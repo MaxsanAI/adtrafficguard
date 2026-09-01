@@ -1,0 +1,4 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="Create account"><section class="hero"><h1>Start monitoring safely</h1><form action="/api/auth/register" method="post" onsubmit="event.preventDefault();fetch(this.action,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(this)))}).then(r=>r.ok?location='/dashboard':r.json().then(x=>alert(x.error)))"><input name="email" type="email" placeholder="Work email" required/><input name="password" type="password" placeholder="At least 12 characters" minlength="12" required/><button class="button">Create free account</button></form></section></Base>
