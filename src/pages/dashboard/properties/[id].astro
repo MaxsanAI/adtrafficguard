@@ -24,3 +24,5 @@ const metrics = await Astro.locals.runtime.env.DB.prepare('SELECT metric_date, s
     if (response.ok) location.reload();
   });
 </script>
+---
+<Dashboard title="Property analysis"><h1>Property analysis</h1><article class="card"><b>Property details</b><p class="muted">Risk factors, sources, countries, and trend charts are available only to the owning authenticated account through server-side queries.</p></article></Dashboard>
